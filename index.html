@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>le battant — Propositions formulaire de devis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Pacifico&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{--vert-volet:#8FAF89;--vert-deep:#4A6347;--rouge-sang:#C5322D;--noir:#14141A;--creme:#F5F0E1;--gris:#8C8780}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--creme);color:var(--noir);line-height:1.55;min-height:100vh}
+
+  .toolbar{position:sticky;top:0;background:var(--noir);color:var(--creme);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;z-index:60;border-bottom:3px solid var(--rouge-sang)}
+  .toolbar .left{display:flex;align-items:center;gap:14px}
+  .toolbar .pacifico-sm{font-family:'Pacifico',cursive;font-size:24px;color:var(--vert-volet);text-shadow:1px 1px 0 var(--rouge-sang)}
+  .toolbar .small-meta{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase}
+  .btn{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:10px 18px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+  .btn.prim{background:var(--rouge-sang);color:#fff}
+  .btn.prim:hover{background:var(--vert-volet);color:var(--noir)}
+  .btn.sec{background:transparent;color:var(--creme);border:2px solid var(--creme)}
+  .btn.sec:hover{background:var(--creme);color:var(--noir)}
+
+  .save-indicator{position:fixed;top:62px;right:22px;background:var(--vert-deep);color:#fff;padding:8px 14px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;z-index:100;border-left:3px solid var(--vert-volet);opacity:0;transition:opacity .3s}
+  .save-indicator.show{opacity:1}
+
+  .hero{background:var(--noir);color:var(--creme);padding:60px 32px 80px;text-align:center;position:relative;border-bottom:8px solid var(--rouge-sang);overflow:hidden}
+  .hero::before,.hero::after{font-family:'Archivo Black',sans-serif;color:var(--rouge-sang);font-size:13px;letter-spacing:.35em;position:absolute;top:24px}
+  .hero::before{content:"★ ROUND TWO ★";left:32px}
+  .hero::after{content:"★ 3 VERSIONS ★";right:32px}
+  .wordmark{font-family:'Pacifico',cursive;font-size:clamp(50px,10vw,90px);color:var(--vert-volet);line-height:1;margin:20px 0 14px;text-shadow:4px 4px 0 var(--rouge-sang)}
+  .subtitle{font-family:'Anton',sans-serif;font-size:clamp(22px,4vw,32px);letter-spacing:.1em;text-transform:uppercase}
+  .hero p{margin-top:14px;color:rgba(245,240,225,.7);max-width:580px;margin-left:auto;margin-right:auto;font-size:15px}
+
+  main{max-width:1100px;margin:0 auto;padding:50px 28px 100px}
+
+  .intro{background:var(--vert-deep);color:var(--creme);padding:24px 30px;border-left:8px solid var(--rouge-sang);margin-bottom:50px;font-size:15px}
+  .intro strong{color:var(--vert-volet)}
+
+  /* TABS */
+  .tabs{display:flex;gap:4px;margin-bottom:32px;border-bottom:3px solid var(--noir);flex-wrap:wrap}
+  .tab{background:var(--creme);border:2px solid var(--noir);border-bottom:none;padding:14px 24px;cursor:pointer;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,20,26,.6);transition:all .15s;display:flex;align-items:center;gap:10px;flex:1;justify-content:center;min-width:180px}
+  .tab:hover{color:var(--noir)}
+  .tab.active{background:var(--noir);color:var(--creme);border-color:var(--noir)}
+  .tab .vbadge{background:var(--rouge-sang);color:#fff;padding:3px 8px;font-size:9px;letter-spacing:.2em}
+  .tab.active .vbadge{background:var(--vert-volet);color:var(--noir)}
+
+  .tab-pane{display:none}
+  .tab-pane.active{display:block;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .vhead{background:#fff;border:2px solid var(--noir);padding:30px 32px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;border-left:8px solid var(--rouge-sang)}
+  .vhead h2{font-family:'Anton',sans-serif;font-size:36px;text-transform:uppercase;letter-spacing:.02em;line-height:1;margin-bottom:8px}
+  .vhead h2 em{font-style:normal;color:var(--vert-deep)}
+  .vhead .vtag{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.3em;color:var(--rouge-sang);text-transform:uppercase;margin-bottom:8px}
+  .vhead .vlead{font-size:15px;color:rgba(20,20,26,.7);line-height:1.5}
+  .vhead .rating{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .vhead .rating .stars{display:flex;gap:4px}
+  .vhead .rating .star{cursor:pointer;font-size:28px;color:rgba(20,20,26,.18);transition:all .15s}
+  .vhead .rating .star.on{color:var(--rouge-sang);transform:scale(1.05)}
+  .vhead .rating .star:hover{color:var(--vert-deep)}
+  .vhead .rating .rlbl{font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--vert-deep);text-transform:uppercase}
+
+  .pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:30px}
+  .pros,.cons{background:#fff;border:2px solid var(--noir);padding:18px 22px}
+  .pros{border-left:6px solid var(--vert-volet)}
+  .cons{border-left:6px solid var(--rouge-sang)}
+  .pros h4,.cons h4{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px}
+  .pros h4{color:var(--vert-deep)}
+  .cons h4{color:var(--rouge-sang)}
+  .pros ul,.cons ul{list-style:none}
+  .pros li,.cons li{font-size:13px;padding:5px 0 5px 22px;position:relative;border-bottom:1px solid rgba(20,20,26,.06)}
+  .pros li:last-child,.cons li:last-child{border-bottom:none}
+  .pros li::before{content:"✓";color:var(--vert-deep);position:absolute;left:2px;font-weight:bold}
+  .cons li::before{content:"✗";color:var(--rouge-sang);position:absolute;left:2px;font-weight:bold}
+
+  /* DEMO ZONE */
+  .demo-zone{background:#fff;border:3px solid var(--noir);margin-bottom:24px;overflow:hidden;position:relative}
+  .demo-zone::before{content:"★ DÉMO INTERACTIVE ★";position:absolute;top:8px;right:12px;background:var(--rouge-sang);color:#fff;font-family:'Archivo Black',sans-serif;font-size:8px;letter-spacing:.25em;padding:4px 10px;z-index:5}
+  .demo-frame{padding:28px 30px;background:var(--creme);min-height:360px}
+
+  /* DEMO COMMUN — formulaire styles */
+  .d-progress{display:flex;gap:4px;margin-bottom:20px}
+  .d-progress .s{flex:1;height:4px;background:rgba(20,20,26,.15)}
+  .d-progress .s.act{background:var(--rouge-sang)}
+  .d-progress .s.don{background:var(--vert-volet)}
+  .d-step-num{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.3em;color:var(--rouge-sang);text-transform:uppercase;margin-bottom:8px}
+  .d-h1{font-family:'Anton',sans-serif;font-size:28px;text-transform:uppercase;line-height:1;margin-bottom:8px}
+  .d-h1 em{font-style:normal;color:var(--vert-deep)}
+  .d-lead{font-size:13px;color:rgba(20,20,26,.65);margin-bottom:18px}
+  .d-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:14px}
+  .d-card{background:#fff;border:2px solid var(--noir);padding:14px 12px;cursor:pointer;transition:all .15s;font-size:13px;text-align:center;position:relative;display:flex;flex-direction:column;gap:4px;align-items:center}
+  .d-card:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--noir)}
+  .d-card.sel{border-color:var(--rouge-sang);box-shadow:4px 4px 0 var(--rouge-sang)}
+  .d-card.sel::after{content:"✓";position:absolute;top:4px;right:6px;background:var(--rouge-sang);color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;padding:1px 5px}
+  .d-card .nm{font-family:'Anton',sans-serif;font-size:14px;text-transform:uppercase;line-height:1;letter-spacing:.01em}
+  .d-card .fa{font-family:'Archivo Black',sans-serif;font-size:8px;letter-spacing:.25em;color:var(--vert-deep);text-transform:uppercase}
+  .d-card .ic{width:46px;height:46px;background:var(--noir);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+  .d-card .ic svg{width:30px;height:30px}
+  .d-nav{display:flex;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:2px solid var(--noir);gap:10px}
+  .d-btn{font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:10px 18px;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px}
+  .d-btn.p{background:var(--rouge-sang);color:#fff}
+  .d-btn.p:hover{background:var(--noir)}
+  .d-btn.s{background:transparent;color:var(--noir);border:2px solid var(--noir)}
+
+  /* VERSION A — wizard nav */
+  .wiz-step{display:none}
+  .wiz-step.active{display:block}
+
+  /* VERSION B — page longue */
+  .one-section{background:#fff;border:2px solid var(--noir);padding:22px 26px;margin-bottom:16px;border-left:6px solid var(--vert-deep)}
+  .one-section h3{font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:10px;border-bottom:2px solid var(--rouge-sang);padding-bottom:6px}
+  .one-section .ssnum{font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.3em;color:var(--rouge-sang);text-transform:uppercase;margin-bottom:6px}
+
+  /* VERSION C — accordion */
+  .acc{background:#fff;border:2px solid var(--noir);margin-bottom:10px;overflow:hidden}
+  .acc-head{padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s}
+  .acc-head:hover{background:rgba(143,175,137,.1)}
+  .acc.open .acc-head{background:var(--noir);color:var(--creme)}
+  .acc-head .acc-title{font-family:'Anton',sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.01em;display:flex;align-items:center;gap:10px}
+  .acc-head .acc-title .accnum{font-family:'Archivo Black',sans-serif;background:var(--rouge-sang);color:#fff;font-size:9px;letter-spacing:.2em;padding:3px 8px}
+  .acc-head .acc-arrow{font-family:'Archivo Black',sans-serif;font-size:18px;transition:transform .2s}
+  .acc.open .acc-head .acc-arrow{transform:rotate(180deg)}
+  .acc-body{display:none;padding:18px 22px;background:var(--creme);border-top:2px solid var(--noir)}
+  .acc.open .acc-body{display:block}
+
+  /* COMMENT BOX */
+  .comment{background:#fff;border:2px dashed var(--vert-deep);padding:20px 24px;margin:30px 0 10px;position:relative;z-index:2}
+  .comment .lab{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.3em;color:var(--rouge-sang);text-transform:uppercase;margin-bottom:8px}
+  .comment textarea{width:100%;padding:12px;border:2px solid rgba(20,20,26,.2);background:var(--creme);font-family:'Space Grotesk',sans-serif;font-size:14px;color:var(--noir);min-height:80px;resize:vertical;pointer-events:auto !important;user-select:text !important;-webkit-user-select:text !important;cursor:text;position:relative;z-index:3}
+  .comment textarea:focus{outline:none;border-color:var(--rouge-sang);background:#fff}
+  /* Force tous les inputs editables */
+  textarea,input{pointer-events:auto !important;user-select:text !important;-webkit-user-select:text !important}
+
+  /* FINAL CHOICE */
+  .final{background:var(--noir);color:var(--creme);padding:36px 40px;margin-top:50px;border-left:8px solid var(--vert-volet)}
+  .final h2{font-family:'Anton',sans-serif;font-size:30px;text-transform:uppercase;margin-bottom:14px;color:var(--vert-volet);border-bottom:2px solid var(--rouge-sang);padding-bottom:8px}
+  .final p{font-size:15px;color:rgba(245,240,225,.8);margin-bottom:18px}
+  .final-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+  .fc-opt{background:transparent;border:2px solid var(--creme);padding:18px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;color:var(--creme);transition:all .15s}
+  .fc-opt:hover{border-color:var(--rouge-sang)}
+  .fc-opt.sel{background:var(--rouge-sang);border-color:var(--rouge-sang);color:#fff}
+  .fc-opt .fc-name{font-size:14px;text-transform:uppercase}
+  .fc-opt .fc-sub{font-family:'Space Grotesk',sans-serif;font-weight:normal;font-size:10px;color:rgba(245,240,225,.6);letter-spacing:.1em;text-transform:none}
+  .final textarea{width:100%;padding:14px 18px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.15);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:14px;min-height:90px;resize:vertical}
+  .final textarea:focus{outline:none;border-color:var(--vert-volet);background:rgba(255,255,255,.08)}
+  .final textarea::placeholder{color:rgba(245,240,225,.4)}
+
+  /* COMPARE TABLE */
+  .compare{background:#fff;border:2px solid var(--noir);overflow-x:auto;margin-bottom:30px}
+  .compare table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+  .compare th,.compare td{border:1px solid rgba(20,20,26,.1);padding:12px 14px;text-align:left;vertical-align:top}
+  .compare th{background:var(--noir);color:var(--creme);font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase}
+  .compare td.tcrit{background:var(--vert-deep);color:var(--creme);font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+  .compare .vmark{display:inline-block;font-family:'Archivo Black',sans-serif;padding:3px 8px;font-size:10px;letter-spacing:.15em}
+  .compare .vmark.good{background:var(--vert-deep);color:var(--creme)}
+  .compare .vmark.bad{background:rgba(197,50,45,.15);color:var(--rouge-sang)}
+  .compare .vmark.mid{background:rgba(20,20,26,.1);color:var(--noir)}
+
+  footer{background:var(--noir);color:var(--creme);padding:40px 24px;text-align:center;border-top:8px solid var(--rouge-sang)}
+  footer .pacifico{font-family:'Pacifico',cursive;font-size:36px;color:var(--vert-volet);margin-bottom:6px}
+  footer .slogan{font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.35em;color:var(--rouge-sang);text-transform:uppercase}
+
+  @media(max-width:760px){
+    .hero{padding:40px 20px 60px}
+    main{padding:30px 18px 80px}
+    .vhead{grid-template-columns:1fr;padding:22px}
+    .pros-cons{grid-template-columns:1fr}
+    .demo-frame{padding:20px 18px}
+    .final{padding:24px 22px}
+  }
+  @media print{
+    .toolbar,.save-indicator{display:none}
+    .tab-pane{display:block !important;break-before:page}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="left">
+    <span class="pacifico-sm">le battant</span>
+    <div class="small-meta">★ Propositions formulaire devis ★</div>
+  </div>
+  <div>
+    <button class="btn sec" onclick="resetAll()">↺ Reset</button>
+    <button class="btn prim" onclick="exportPDF()">📄 Export PDF</button>
+  </div>
+</div>
+
+<div class="save-indicator" id="saveInd">✓ Sauvegardé</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wordmark">le battant</div>
+  <div class="subtitle">3 versions du formulaire de devis</div>
+  <p>On a préparé trois pistes différentes pour le formulaire de demande de devis. Testez-les, comparez-les, donnez votre avis. À la fin, vous choisissez votre préférée et on construit dessus.</p>
+</header>
+
+<main>
+
+<div class="intro">
+  <strong>★ Salut Simon ! ★</strong><br><br>
+  J'ai préparé <strong>3 versions du formulaire de devis</strong> pour Le battant. Le but : choisir ensemble laquelle on garde pour la prod.<br><br>
+
+  <strong>👉 Ce que tu dois faire :</strong><br>
+  ① Clique sur les onglets <strong>A · Wizard</strong>, <strong>B · Page longue</strong> et <strong>C · Sections pliables</strong> — teste chaque démo<br>
+  ② Mets une <strong>note (★ ★ ★ ★ ★)</strong> à chaque version + écris un commentaire (ce qui te plaît, ce qui te gêne)<br>
+  ③ Jette aussi un œil à l'onglet <strong>📨 Ce que vous recevez</strong> (= ce qui arrivera dans ta boîte mail à chaque demande de devis)<br>
+  ④ Tout en bas : <strong>choisis ta version préférée</strong> + dis-moi pourquoi<br>
+  ⑤ Clique sur le <strong>gros bouton rouge « ENVOYER MON RETOUR À HERMAN »</strong> — ça t'ouvre un mail tout pré-rempli, tu n'as plus qu'à appuyer sur Envoyer 📩<br><br>
+
+  <em>Tout est sauvegardé automatiquement dans ton navigateur — tu peux fermer la page et revenir plus tard. Pas de pression sur le timing, prends le temps qu'il faut.</em><br><br>
+
+  Merci !<br>
+  — Herman
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="A" onclick="switchTab('A')"><span class="vbadge">A</span>Wizard</div>
+  <div class="tab" data-tab="B" onclick="switchTab('B')"><span class="vbadge">B</span>Page longue</div>
+  <div class="tab" data-tab="C" onclick="switchTab('C')"><span class="vbadge">C</span>Sections pliables</div>
+  <div class="tab" data-tab="D" onclick="switchTab('D')" style="background:var(--vert-deep);color:var(--creme);border-color:var(--vert-deep)"><span class="vbadge" style="background:var(--vert-volet);color:var(--noir)">📨</span>Ce que vous recevez</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VERSION A — WIZARD -->
+<!-- ============================================================ -->
+<div class="tab-pane active" id="tabA">
+  <div class="vhead">
+    <div>
+      <div class="vtag">Version A · Wizard</div>
+      <h2>Étape par <em>étape</em></h2>
+      <p class="vlead">Le client est guidé pas à pas dans un parcours en 6 écrans. Chaque étape pose 1 ou 2 questions max. Progress bar en haut. Ne peut pas passer à la suite tant que l'étape précédente n'est pas remplie.</p>
+    </div>
+    <div class="rating">
+      <div class="rlbl">Votre note</div>
+      <div class="stars" data-rating="A">
+        <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✓ Avantages</h4>
+      <ul>
+        <li>Très clair, impossible de se perdre</li>
+        <li>Idéal pour clients qui ne savent pas par où commencer</li>
+        <li>Validation à chaque étape = données propres</li>
+        <li>Très lisible sur mobile (peu d'info par écran)</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>✗ Inconvénients</h4>
+      <ul>
+        <li>Plus long à remplir (6 écrans)</li>
+        <li>Pas de vue d'ensemble du formulaire</li>
+        <li>Frustrant pour pros qui savent déjà ce qu'ils veulent</li>
+        <li>Plus de code pour gérer la navigation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="demo-zone">
+    <div class="demo-frame">
+      <div class="d-progress">
+        <div class="s don" data-wzs="1" onclick="wizGoto('A',1)"></div>
+        <div class="s act" data-wzs="2" onclick="wizGoto('A',2)"></div>
+        <div class="s" data-wzs="3" onclick="wizGoto('A',3)"></div>
+        <div class="s" data-wzs="4" onclick="wizGoto('A',4)"></div>
+        <div class="s" data-wzs="5" onclick="wizGoto('A',5)"></div>
+        <div class="s" data-wzs="6" onclick="wizGoto('A',6)"></div>
+      </div>
+
+      <!-- Étape 1 — Statut -->
+      <div class="wiz-step" data-wzstep="1">
+        <div class="d-step-num">★ Étape 01 / 06 ★ — Vous êtes…</div>
+        <div class="d-h1">Vous êtes <em>plutôt…</em></div>
+        <div class="d-lead">Pro ou particulier ? Si particulier, on vous met en relation avec un pro partenaire — pas de devis direct.</div>
+        <div class="d-grid">
+          <div class="d-card sel" onclick="setStatutA('pro')" data-statA="pro"><div class="fa">Recommandé · Devis direct</div><div class="nm">Pro du bâtiment</div></div>
+          <div class="d-card" onclick="setStatutA('part')" data-statA="part"><div class="fa">Mise en relation pro</div><div class="nm">Particulier</div></div>
+        </div>
+
+        <!-- ÉCRAN PARTICULIER (s'affiche si "Particulier" cliqué) -->
+        <div id="partFormA" style="display:none;margin-top:18px;background:#fff;border:3px solid var(--rouge-sang);padding:24px 26px">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.3em;color:var(--rouge-sang);text-transform:uppercase;margin-bottom:8px">★ Mise en relation pro partenaire ★</div>
+          <h3 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;margin-bottom:8px">On vous oriente vers un pro de votre région</h3>
+          <p style="font-size:13px;color:rgba(20,20,26,.7);margin-bottom:14px">Le Battant ne vend pas en direct aux particuliers. Laissez-nous vos coordonnées + votre projet, on vous met en relation avec un menuisier partenaire dans votre département.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <input type="text" placeholder="Nom & prénom" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px">
+            <input type="text" placeholder="Code postal" maxlength="5" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px">
+            <input type="email" placeholder="Email" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px">
+            <input type="tel" placeholder="Téléphone" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px">
+          </div>
+          <textarea placeholder="Décrivez brièvement votre projet (type de volet, dimensions approx, contraintes…)" style="width:100%;padding:10px 12px;border:2px solid var(--noir);font-size:13px;min-height:70px;font-family:'Space Grotesk',sans-serif"></textarea>
+          <button class="d-btn p" style="margin-top:12px;width:100%;justify-content:center">★ Être mis en relation avec un pro →</button>
+          <p style="font-size:11px;color:rgba(20,20,26,.5);margin-top:8px;text-align:center">Réponse sous 48h · Pas de spam · Réseau de pros qualifiés.</p>
+        </div>
+      </div>
+
+      <div class="wiz-step active" data-wzstep="2">
+        <div class="d-step-num">★ Étape 02 / 06 ★ — Livraison</div>
+        <div class="d-h1">Votre <em>livraison</em></div>
+        <div class="d-lead">Où livrer votre commande. <strong>Le Battant fabrique sur-mesure</strong> — la pose est assurée par vos soins ou un partenaire.</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Type de bâtiment</div>
+        <div class="d-grid"><div class="d-card"><div class="nm">Maison</div></div><div class="d-card sel"><div class="nm">Immeuble</div></div><div class="d-card"><div class="nm">Local pro</div></div><div class="d-card"><div class="nm">ERP / Hôtel</div></div></div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Lieu de livraison</div>
+        <input type="text" placeholder="Adresse (n° et rue)" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px;width:100%;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:12px"><input type="text" placeholder="Code postal" maxlength="5" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px"><input type="text" placeholder="Ville" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px"></div>
+        <div style="background:var(--noir);color:var(--creme);padding:11px 14px;font-size:12px;line-height:1.45;border-left:4px solid var(--vert-volet)">⏱️ <strong>Le délai est fixé par Le Battant</strong> et communiqué sur votre devis — pas besoin de le renseigner.</div>
+      </div>
+
+      <div class="wiz-step" data-wzstep="3">
+        <div class="d-step-num">★ Étape 03 / 06 ★ — Volets</div>
+        <div class="d-h1">Quels <em>volets</em> ?</div>
+        <div class="d-lead">8 types, multi-sélection, quantité par type. Tout est sur-mesure.</div>
+        <div class="d-grid" id="voletGridA" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+          <div class="d-card sel"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><rect x="3" y="3" width="10" height="24"/><rect x="17" y="3" width="10" height="24"/></svg></div><div class="fa">N°01</div><div class="nm">Battant gond</div></div>
+          <div class="d-card"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><rect x="2" y="2" width="26" height="26" stroke="#C5322D"/><rect x="5" y="5" width="9" height="20"/><rect x="16" y="5" width="9" height="20"/></svg></div><div class="fa">N°02</div><div class="nm">Battant dormant</div></div>
+          <div class="d-card"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><path d="M 3 5 L 9 27 L 15 5 L 21 27 L 27 5"/></svg></div><div class="fa">N°03</div><div class="nm">Pliant</div></div>
+          <div class="d-card sel"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><line x1="2" y1="5" x2="28" y2="5" stroke="#C5322D" stroke-width="2"/><path d="M 6 5 L 6 26 L 12 5 L 12 26 L 18 5 L 18 26"/></svg></div><div class="fa">N°04</div><div class="nm">Pliant suspendu</div></div>
+          <div class="d-card"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><line x1="2" y1="4" x2="28" y2="4" stroke="#C5322D" stroke-width="2"/><rect x="6" y="6" width="18" height="22"/></svg></div><div class="fa">N°05</div><div class="nm">Coulissant</div></div>
+          <div class="d-card sel"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><rect x="4" y="4" width="22" height="22" stroke="#C5322D"/><line x1="6" y1="8" x2="24" y2="10"/><line x1="6" y1="14" x2="24" y2="16"/><line x1="6" y1="20" x2="24" y2="22"/></svg></div><div class="fa">N°06</div><div class="nm">Brise-vue</div></div>
+          <div class="d-card"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><rect x="4" y="4" width="22" height="22" stroke="#C5322D"/><line x1="6" y1="8" x2="24" y2="6"/><line x1="6" y1="14" x2="24" y2="12"/><line x1="6" y1="20" x2="24" y2="18"/></svg></div><div class="fa">N°07</div><div class="nm">Brise-soleil</div></div>
+          <div class="d-card"><div class="ic"><svg viewBox="0 0 30 30" fill="none" stroke="#8FAF89" stroke-width="1.5"><line x1="2" y1="4" x2="28" y2="4" stroke="#C5322D"/><line x1="2" y1="26" x2="28" y2="26" stroke="#C5322D"/><rect x="8" y="4" width="14" height="22"/></svg></div><div class="fa">N°08</div><div class="nm">Séparatif</div></div>
+        </div>
+        <div id="countA" style="margin-top:12px;background:var(--noir);color:var(--creme);padding:10px 14px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase">★ 3 types sélectionnés · 3 unités au total ★</div>
+      </div>
+
+      <div class="wiz-step" data-wzstep="4">
+        <div class="d-step-num">★ Étape 04 / 06 ★ — Détails</div>
+        <div class="d-h1">Les <em>détails</em></div>
+        <div class="d-lead">Pour chaque volet sélectionné, un sous-formulaire avec dimensions et options.</div>
+
+        <!-- Détail dynamique : généré UNIQUEMENT pour les volets sélectionnés à l'étape 3 -->
+        <div id="detA"></div>
+        <div id="detA-empty" style="background:#fff;border:2px dashed var(--noir);padding:20px;text-align:center;font-size:13px;color:rgba(20,20,26,.6);margin-top:10px;display:none">Aucun volet sélectionné. Revenez à l'étape 3 pour en choisir.</div>
+      </div>
+
+      <div class="wiz-step" data-wzstep="5">
+        <div class="d-step-num">★ Étape 05 / 06 ★ — Finitions</div>
+        <div class="d-h1">Vos <em>finitions</em></div>
+        <div class="d-lead">Tout est sur-mesure. Que de l'alu — pas de bois, pas de PVC.</div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Type de traitement — échantillons réels</div>
+        <div class="sw-trait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Teinte — échantillons réels</div>
+        <div class="sw-color" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-bottom:10px"></div>
+        <input type="text" placeholder="Autre RAL ? (ex : RAL 6005 — Vert mousse)" style="padding:10px 12px;border:2px solid var(--noir);font-size:13px;width:100%">
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Texture — échantillons réels</div>
+        <div class="sw-tex" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Même finition partout ?</div>
+        <div class="d-grid"><div class="d-card sel"><div class="nm">Oui identique</div></div><div class="d-card"><div class="nm">Décliner par volet</div></div></div>
+      </div>
+
+      <div class="wiz-step" data-wzstep="6">
+        <div class="d-step-num">★ Étape 06 / 06 ★ — Envoi</div>
+        <div class="d-h1">Récap & <em>envoi</em></div>
+        <div class="d-lead">Vérifiez votre demande puis envoyez.</div>
+
+        <!-- Récap -->
+        <div style="background:var(--noir);color:var(--creme);padding:16px 18px;margin:14px 0;border-left:6px solid var(--vert-volet)">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--vert-volet);text-transform:uppercase;margin-bottom:8px">★ Récap demande</div>
+          <table style="width:100%;font-size:12px;color:var(--creme)">
+            <tr><td style="padding:3px 0;color:rgba(245,240,225,.6)">Livraison</td><td style="padding:3px 0"><strong>Immeuble · 06400 Cannes</strong></td></tr>
+            <tr><td style="padding:3px 0;color:rgba(245,240,225,.6)">Volets</td><td style="padding:3px 0"><strong id="recapVoletsA">3 types · 8 unités</strong></td></tr>
+            <tr><td style="padding:3px 0;color:rgba(245,240,225,.6)">Finition</td><td style="padding:3px 0"><strong class="recap-finition">RAL 7016 — Anthracite · Mat</strong></td></tr>
+            <tr><td style="padding:3px 0;color:rgba(245,240,225,.6)">Délai</td><td style="padding:3px 0"><strong>Indiqué sur le devis par Le Battant</strong></td></tr>
+          </table>
+        </div>
+
+        <!-- Coordonnées -->
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Vos coordonnées <span style="color:var(--noir);opacity:.55;font-size:8px">(le client qui demande le devis — pas Le Battant)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          <input type="text" placeholder="Raison sociale" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+          <input type="text" placeholder="SIRET" maxlength="14" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+          <input type="text" placeholder="Nom & prénom" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+          <input type="email" placeholder="Email" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+          <input type="tel" placeholder="Téléphone" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+          <select style="padding:8px 10px;border:2px solid var(--noir);font-size:12px;background:#fff"><option>Dirigeant</option><option>Conducteur travaux</option><option>Architecte</option></select>
+        </div>
+
+        <!-- Upload plans -->
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:10px 0 6px">Plans / photos (optionnel)</div>
+        <div style="border:2px dashed var(--noir);padding:14px;text-align:center;background:#fff;font-size:12px;color:rgba(20,20,26,.6)">📎 Glisser-déposer ou cliquer · PDF, JPG, PNG, DWG · 8 MB max</div>
+
+        <!-- RGPD -->
+        <label style="display:flex;align-items:flex-start;gap:8px;padding:10px;border:2px dashed var(--vert-deep);margin-top:12px;font-size:12px;background:#fff">
+          <input type="checkbox" style="margin-top:2px;accent-color:var(--rouge-sang)">
+          <span>J'accepte que mes données soient utilisées pour traiter ma demande de devis. Pas de partage avec des tiers.</span>
+        </label>
+
+        <button class="d-btn p" style="width:100%;margin-top:12px;justify-content:center;padding:14px;font-size:12px">★ Envoyer ma demande →</button>
+      </div>
+
+      <div class="d-nav">
+        <button class="d-btn s" onclick="wizPrev('A')">← Précédent</button>
+        <button class="d-btn p" onclick="wizNext('A')">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="comment">
+    <div class="lab">★ Commentaire sur la Version A ★</div>
+    <textarea data-q="commentA" placeholder="Ce qui vous plaît, ce qui vous gêne, ce qu'il faut changer…"></textarea>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VERSION B — PAGE LONGUE -->
+<!-- ============================================================ -->
+<div class="tab-pane" id="tabB">
+  <div class="vhead">
+    <div>
+      <div class="vtag">Version B · One-pager</div>
+      <h2>Tout sur <em>une page</em></h2>
+      <p class="vlead">Toutes les sections déroulées sur une seule longue page. Le client scrolle, voit l'ensemble, peut sauter directement à ce qui l'intéresse. Aucune navigation, aucune validation par étape — juste un envoi en bas.</p>
+    </div>
+    <div class="rating">
+      <div class="rlbl">Votre note</div>
+      <div class="stars" data-rating="B">
+        <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✓ Avantages</h4>
+      <ul>
+        <li>Vue d'ensemble immédiate du formulaire</li>
+        <li>Idéal pour pros qui savent déjà ce qu'ils veulent</li>
+        <li>Plus rapide à remplir pour quelqu'un qui scrolle vite</li>
+        <li>Simple à coder, simple à maintenir</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>✗ Inconvénients</h4>
+      <ul>
+        <li>Peut paraître long et décourageant au premier abord</li>
+        <li>Plus dur à remplir sur mobile (gros scroll)</li>
+        <li>Risque de champs oubliés (pas de validation par étape)</li>
+        <li>Moins guidé pour les clients hésitants</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="demo-zone">
+    <div class="demo-frame" style="max-height:480px;overflow-y:auto">
+      <div class="one-section">
+        <div class="ssnum">01 — Vous êtes</div>
+        <h3>Pro ou particulier ?</h3>
+        <div class="d-grid">
+          <div class="d-card sel"><div class="nm">Pro</div></div>
+          <div class="d-card"><div class="nm">Particulier</div></div>
+        </div>
+      </div>
+      <div class="one-section">
+        <div class="ssnum">02 — Livraison</div>
+        <h3>Où livrer</h3>
+        <p style="font-size:12px;color:rgba(20,20,26,.6);margin:0 0 8px"><strong>Le Battant fabrique sur-mesure</strong> — la pose est assurée par vos soins ou un partenaire.</p>
+        <input type="text" placeholder="Adresse (n° et rue)" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px;width:100%;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:10px"><input type="text" placeholder="Code postal" maxlength="5" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px"><input type="text" placeholder="Ville" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px"></div>
+        <div style="background:var(--noir);color:var(--creme);padding:10px 13px;font-size:12px;line-height:1.45;border-left:4px solid var(--vert-volet)">⏱️ <strong>Le délai est fixé par Le Battant</strong> et communiqué sur votre devis.</div>
+      </div>
+      <div class="one-section">
+        <div class="ssnum">03 — Volets</div>
+        <h3>Vos volets</h3>
+        <div class="d-grid" id="voletGridB" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))"></div>
+        <div id="countB" style="margin-top:10px;background:var(--noir);color:var(--creme);padding:8px 12px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase"></div>
+      </div>
+      <div class="one-section">
+        <div class="ssnum">04 — Détails par volet</div>
+        <h3>Précisez chaque volet</h3>
+        <div id="detB"></div>
+        <div id="detB-empty" style="background:#fff;border:2px dashed var(--noir);padding:16px;text-align:center;font-size:13px;color:rgba(20,20,26,.6);display:none">Aucun volet sélectionné en section 03.</div>
+      </div>
+      <div class="one-section">
+        <div class="ssnum">05 — Finitions</div>
+        <h3>Votre finition</h3>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:8px 0 6px">Traitement</div>
+        <div class="sw-trait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Teinte</div>
+        <div class="sw-color" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px"></div>
+        <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Texture</div>
+        <div class="sw-tex" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+        <p style="font-size:12px;margin-top:10px">Sélection : <strong class="recap-finition"></strong></p>
+      </div>
+      <div class="one-section">
+        <div class="ssnum">06 — Coordonnées</div>
+        <h3>Vous contacter</h3>
+        <p style="font-size:11px;color:rgba(20,20,26,.55);margin:0 0 8px">Coordonnées du client qui demande le devis (pas celles de Le Battant).</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input type="text" placeholder="Raison sociale" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          <input type="text" placeholder="SIRET" maxlength="14" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          <input type="text" placeholder="Nom & prénom" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          <input type="email" placeholder="Email" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          <input type="tel" placeholder="Téléphone" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          <input type="text" placeholder="Ville" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+        </div>
+        <div style="border:2px dashed var(--noir);padding:12px;text-align:center;background:#fff;font-size:12px;color:rgba(20,20,26,.6);margin-top:8px">📎 Plans / photos (optionnel) · PDF, JPG, PNG, DWG</div>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;font-size:12px"><input type="checkbox" style="margin-top:2px;accent-color:var(--rouge-sang)"> J'accepte que mes données soient utilisées pour traiter ma demande de devis.</label>
+      </div>
+      <div style="text-align:center;padding:18px 0">
+        <button class="d-btn p" style="font-size:13px;padding:14px 26px">Envoyer ma demande ★</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="comment">
+    <div class="lab">★ Commentaire sur la Version B ★</div>
+    <textarea data-q="commentB" placeholder="Ce qui vous plaît, ce qui vous gêne, ce qu'il faut changer…"></textarea>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VERSION C — ACCORDION -->
+<!-- ============================================================ -->
+<div class="tab-pane" id="tabC">
+  <div class="vhead">
+    <div>
+      <div class="vtag">Version C · Hybride</div>
+      <h2>Sections <em>pliables</em></h2>
+      <p class="vlead">Compromis entre wizard et page longue : toutes les sections sont sur une page, mais chacune est <strong>pliée par défaut</strong>. Le client ouvre ce qu'il veut remplir, ferme quand c'est fait. Vue d'ensemble + pas écrasé visuellement.</p>
+    </div>
+    <div class="rating">
+      <div class="rlbl">Votre note</div>
+      <div class="stars" data-rating="C">
+        <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>✓ Avantages</h4>
+      <ul>
+        <li>Vue d'ensemble + ne pas tout afficher d'un coup</li>
+        <li>Le client choisit son rythme</li>
+        <li>Très bien sur desktop ET mobile</li>
+        <li>Cases « ✓ Section complétée » très satisfaisantes</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>✗ Inconvénients</h4>
+      <ul>
+        <li>UX moins évidente pour les clients âgés / peu tech</li>
+        <li>Pas de progression linéaire forcée</li>
+        <li>Plus de code à entretenir</li>
+        <li>Possible d'oublier une section pliée</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="demo-zone">
+    <div class="demo-frame">
+      <div class="acc" id="acc1">
+        <div class="acc-head" onclick="toggleAcc('acc1')">
+          <div class="acc-title"><span class="accnum">01</span>Vous êtes</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body">
+          <div class="d-grid">
+            <div class="d-card sel"><div class="nm">Pro</div></div>
+            <div class="d-card"><div class="nm">Particulier</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="acc open" id="acc2">
+        <div class="acc-head" onclick="toggleAcc('acc2')">
+          <div class="acc-title"><span class="accnum">02</span>Livraison</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body">
+          <p style="font-size:12px;color:rgba(20,20,26,.6);margin:0 0 8px"><strong>Le Battant fabrique sur-mesure</strong> — la pose est assurée par vos soins ou un partenaire.</p>
+          <input type="text" placeholder="Adresse (n° et rue)" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px;width:100%;margin-bottom:8px">
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:10px"><input type="text" placeholder="Code postal" maxlength="5" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px"><input type="text" placeholder="Ville" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px"></div>
+          <div style="background:var(--noir);color:var(--creme);padding:10px 13px;font-size:12px;line-height:1.45;border-left:4px solid var(--vert-volet)">⏱️ <strong>Le délai est fixé par Le Battant</strong> et communiqué sur votre devis.</div>
+        </div>
+      </div>
+      <div class="acc" id="acc3">
+        <div class="acc-head" onclick="toggleAcc('acc3')">
+          <div class="acc-title"><span class="accnum">03</span>Volets</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body">
+          <div class="d-grid" id="voletGridC" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div>
+          <div id="countC" style="margin-top:10px;background:var(--noir);color:var(--creme);padding:8px 12px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase"></div>
+        </div>
+      </div>
+      <div class="acc" id="acc4">
+        <div class="acc-head" onclick="toggleAcc('acc4')">
+          <div class="acc-title"><span class="accnum">04</span>Détails par volet</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body"><div id="detC"></div><div id="detC-empty" style="background:#fff;border:2px dashed var(--noir);padding:16px;text-align:center;font-size:13px;color:rgba(20,20,26,.6);display:none">Aucun volet sélectionné en section 03.</div></div>
+      </div>
+      <div class="acc" id="acc5">
+        <div class="acc-head" onclick="toggleAcc('acc5')">
+          <div class="acc-title"><span class="accnum">05</span>Finitions</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:2px 0 6px">Traitement</div>
+          <div class="sw-trait" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Teinte</div>
+          <div class="sw-color" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px"></div>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:var(--rouge-sang);text-transform:uppercase;margin:14px 0 6px">Texture</div>
+          <div class="sw-tex" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px"></div>
+          <p style="font-size:12px;margin-top:10px">Sélection : <strong class="recap-finition"></strong></p>
+        </div>
+      </div>
+      <div class="acc" id="acc6">
+        <div class="acc-head" onclick="toggleAcc('acc6')">
+          <div class="acc-title"><span class="accnum">06</span>Coordonnées &amp; envoi</div>
+          <div class="acc-arrow">▼</div>
+        </div>
+        <div class="acc-body">
+          <p style="font-size:11px;color:rgba(20,20,26,.55);margin:0 0 8px">Coordonnées du client qui demande le devis (pas celles de Le Battant).</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <input type="text" placeholder="Raison sociale" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+            <input type="text" placeholder="SIRET" maxlength="14" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+            <input type="text" placeholder="Nom & prénom" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+            <input type="email" placeholder="Email" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+            <input type="tel" placeholder="Téléphone" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+            <input type="text" placeholder="Ville" style="padding:9px 11px;border:2px solid var(--noir);font-size:12px">
+          </div>
+          <div style="border:2px dashed var(--noir);padding:12px;text-align:center;background:#fff;font-size:12px;color:rgba(20,20,26,.6);margin-top:8px">📎 Plans / photos (optionnel) · PDF, JPG, PNG, DWG</div>
+          <label style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;font-size:12px"><input type="checkbox" style="margin-top:2px;accent-color:var(--rouge-sang)"> J'accepte que mes données soient utilisées pour traiter ma demande de devis.</label>
+          <button class="d-btn p" style="width:100%;margin-top:12px;justify-content:center;padding:13px;font-size:12px">★ Envoyer ma demande →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comment">
+    <div class="lab">★ Commentaire sur la Version C ★</div>
+    <textarea data-q="commentC" placeholder="Ce qui vous plaît, ce qui vous gêne, ce qu'il faut changer…"></textarea>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VERSION D — CE QUE VOUS RECEVEZ (sortie atelier) -->
+<!-- ============================================================ -->
+<div class="tab-pane" id="tabD">
+  <div class="vhead" style="border-left-color:var(--vert-deep);background:linear-gradient(180deg,#fff 0%,rgba(143,175,137,.06) 100%)">
+    <div>
+      <div class="vtag" style="color:var(--vert-deep)">★ Côté atelier · Ce que vous recevez</div>
+      <h2>La <em>sortie</em></h2>
+      <p class="vlead">Voilà ce qui atterrit dans votre boîte mail (et dans votre dossier devis) à chaque fois qu'un pro remplit le formulaire. Email résumé + PDF complet en pièce jointe, formatés aux couleurs Le battant — prêt à imprimer ou transférer à votre commercial.</p>
+    </div>
+    <div class="rating">
+      <div class="rlbl">Votre note</div>
+      <div class="stars" data-rating="D">
+        <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
+        <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUB-TABS pour basculer entre email et PDF -->
+  <div style="display:flex;gap:4px;margin-bottom:18px">
+    <div class="d-subtab active" data-sub="email" onclick="switchSub('email')" style="flex:1;background:var(--noir);color:var(--creme);padding:12px;text-align:center;cursor:pointer;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase">📧 Email de notification</div>
+    <div class="d-subtab" data-sub="pdf" onclick="switchSub('pdf')" style="flex:1;background:var(--creme);color:var(--noir);border:2px solid var(--noir);padding:10px;text-align:center;cursor:pointer;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase">📄 PDF de devis (PJ)</div>
+  </div>
+
+  <!-- ============== EMAIL PREVIEW ============== -->
+  <div class="sub-pane active" id="subEmail">
+    <div class="demo-zone" style="background:#fff">
+      <!-- Email client mockup -->
+      <div style="background:#f4f4f4;padding:12px 18px;border-bottom:1px solid #ddd;font-family:'Space Grotesk',sans-serif;font-size:12px;color:#666;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div><strong style="color:#222">De :</strong> Le Battant — Formulaire devis &lt;noreply@lebattant.fr&gt;</div>
+        <div>09:42 · 07/06/2026</div>
+      </div>
+      <div style="background:#f4f4f4;padding:6px 18px 12px;border-bottom:1px solid #ddd;font-family:'Space Grotesk',sans-serif;font-size:12px;color:#666">
+        <div><strong style="color:#222">À :</strong> contact@lebattant.fr</div>
+        <div><strong style="color:#222">Objet :</strong> 🥊 NOUVELLE DEMANDE DEVIS · SARL Menuiserie Dupont · 4 volets pliants suspendus</div>
+      </div>
+
+      <!-- Corps de l'email -->
+      <div style="background:#fff;padding:0;max-width:600px;margin:0 auto;border-left:1px solid #eee;border-right:1px solid #eee">
+
+        <!-- Header email -->
+        <div style="background:#14141A;color:#F5F0E1;padding:32px 28px;text-align:center;border-bottom:6px solid #C5322D;position:relative">
+          <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.3em;color:#C5322D;margin-bottom:14px">★ NOUVELLE DEMANDE DEVIS ★</div>
+          <div style="font-family:'Pacifico',cursive;font-size:42px;color:#8FAF89;line-height:1;text-shadow:2px 2px 0 #C5322D">le battant</div>
+          <div style="font-family:'Anton',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.15em;margin-top:8px;color:rgba(245,240,225,.8)">Demande #2026-047</div>
+        </div>
+
+        <!-- Body email -->
+        <div style="padding:26px 28px;color:#14141A;font-family:'Space Grotesk',sans-serif;font-size:14px;line-height:1.55">
+
+          <p style="margin-bottom:18px"><strong>Salut Simon,</strong></p>
+          <p style="margin-bottom:18px">Un pro vient de remplir le formulaire de devis sur <em>lebattant.fr</em>. Voici le résumé, le PDF complet est joint.</p>
+
+          <!-- Bloc client -->
+          <div style="background:#F5F0E1;border-left:6px solid #C5322D;padding:16px 20px;margin-bottom:20px">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;color:#C5322D;text-transform:uppercase;margin-bottom:8px">★ Client</div>
+            <div style="font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:4px">SARL Menuiserie Dupont</div>
+            <div style="font-size:13px;color:rgba(20,20,26,.7);line-height:1.6">
+              Pierre Dupont — Conducteur de travaux<br>
+              📧 p.dupont@menuiserie-dupont.fr · 📞 06 12 34 56 78<br>
+              🏢 SIRET 812 345 678 00012
+            </div>
+          </div>
+
+          <!-- Bloc chantier -->
+          <div style="background:#fff;border:2px solid #14141A;padding:16px 20px;margin-bottom:20px">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;color:#C5322D;text-transform:uppercase;margin-bottom:10px">★ Livraison</div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <tr><td style="padding:4px 0;color:rgba(20,20,26,.6);width:40%">Bâtiment</td><td style="padding:4px 0"><strong>Immeuble copropriété</strong></td></tr>
+              <tr><td style="padding:4px 0;color:rgba(20,20,26,.6)">Lieu</td><td style="padding:4px 0"><strong>06400 Cannes</strong></td></tr>
+            </table>
+          </div>
+
+          <!-- Bloc volets -->
+          <div style="background:#14141A;color:#F5F0E1;padding:18px 22px;margin-bottom:20px">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;color:#8FAF89;text-transform:uppercase;margin-bottom:12px">★ 2 types de volets · 6 unités au total</div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;color:#F5F0E1">
+              <tr style="border-bottom:1px solid rgba(245,240,225,.15)">
+                <td style="padding:8px 0;width:60px"><span style="background:#C5322D;color:#fff;padding:3px 8px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em">N°04</span></td>
+                <td style="padding:8px 0"><strong>Pliant suspendu</strong> · 1200×2400 mm</td>
+                <td style="padding:8px 0;text-align:right;font-family:'Archivo Black',sans-serif">4 unités</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0"><span style="background:#C5322D;color:#fff;padding:3px 8px;font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.2em">N°06</span></td>
+                <td style="padding:8px 0"><strong>Brise-vue</strong> · 1500×1800 mm</td>
+                <td style="padding:8px 0;text-align:right;font-family:'Archivo Black',sans-serif">2 unités</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Bloc finition -->
+          <div style="background:#fff;border:2px solid #14141A;padding:14px 18px;margin-bottom:24px;font-size:13px">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:10px;letter-spacing:.25em;color:#C5322D;text-transform:uppercase;margin-bottom:8px">★ Finition</div>
+            <strong>Anodisation Bronze · Mat</strong> — identique sur tous les volets
+          </div>
+
+          <!-- Bloc message -->
+          <div style="background:rgba(74,99,71,.08);border-left:4px solid #4A6347;padding:14px 18px;margin-bottom:24px;font-size:13px;font-style:italic;color:rgba(20,20,26,.75)">
+            "Volets sur-mesure pour les balcons d'une copro à Cannes. Besoin d'un devis ferme pour CR avant fin juin. Plans joints. Merci !"
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center;margin:28px 0 18px">
+            <a href="#" style="display:inline-block;background:#C5322D;color:#fff;padding:14px 32px;text-decoration:none;font-family:'Archivo Black',sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase">📄 Voir le PDF complet →</a>
+          </div>
+
+          <p style="font-size:12px;color:rgba(20,20,26,.55);border-top:1px solid #eee;padding-top:14px;margin-top:24px">
+            <strong>Pièces jointes :</strong> <code style="background:#eee;padding:1px 6px;font-size:11px">devis-2026-047.pdf</code> (récap complet) · <code style="background:#eee;padding:1px 6px;font-size:11px">plan-balcons.pdf</code> (joint par le client)
+          </p>
+        </div>
+
+        <!-- Footer email -->
+        <div style="background:#14141A;color:#F5F0E1;padding:20px 28px;text-align:center;border-top:4px solid #C5322D">
+          <div style="font-family:'Pacifico',cursive;font-size:24px;color:#8FAF89">le battant</div>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.3em;color:#C5322D;text-transform:uppercase;margin-top:6px">★ ET TOUT CE QUI SUIT ★</div>
+          <div style="font-size:11px;color:rgba(245,240,225,.4);margin-top:10px">Notification automatique — lebattant.fr</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== PDF PREVIEW ============== -->
+  <div class="sub-pane" id="subPdf" style="display:none">
+    <div class="demo-zone" style="background:#888;padding:30px 0;border-color:#444">
+
+      <!-- Page 1 du PDF -->
+      <div style="max-width:560px;margin:0 auto 24px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);position:relative;min-height:740px;font-family:'Space Grotesk',sans-serif">
+        <div style="position:absolute;top:12px;right:14px;font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:rgba(20,20,26,.4);text-transform:uppercase">Page 1 / 3</div>
+
+        <!-- WATERMARK Pacifico très léger en filigrane -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-family:'Pacifico',cursive;font-size:120px;color:rgba(20,20,26,.04);pointer-events:none;white-space:nowrap;z-index:0">le battant</div>
+
+        <!-- Header page 1 avec logo SVG -->
+        <div style="background:#14141A;color:#F5F0E1;padding:30px 36px 24px;border-bottom:8px solid #C5322D;position:relative;display:flex;align-items:center;gap:20px">
+          <!-- Logo : encadré gants (style Fight Night) -->
+          <div style="flex-shrink:0;width:80px;height:80px;background:#C5322D;display:flex;align-items:center;justify-content:center;position:relative;border:3px solid #F5F0E1">
+            <svg viewBox="0 0 80 80" style="width:60px;height:60px">
+              <!-- Gant gauche -->
+              <ellipse cx="22" cy="44" rx="14" ry="18" fill="#F5F0E1" stroke="#14141A" stroke-width="2"/>
+              <rect x="14" y="56" width="16" height="10" fill="#8FAF89" stroke="#14141A" stroke-width="2"/>
+              <!-- Gant droit -->
+              <ellipse cx="58" cy="44" rx="14" ry="18" fill="#F5F0E1" stroke="#14141A" stroke-width="2"/>
+              <rect x="50" y="56" width="16" height="10" fill="#8FAF89" stroke="#14141A" stroke-width="2"/>
+              <!-- Étoile centre -->
+              <text x="40" y="22" text-anchor="middle" fill="#F5F0E1" font-family="Archivo Black, sans-serif" font-size="14">★</text>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.35em;color:#C5322D;margin-bottom:8px">★ DEMANDE DE DEVIS #2026-047 ★</div>
+            <div style="font-family:'Pacifico',cursive;font-size:48px;color:#8FAF89;line-height:1;text-shadow:3px 3px 0 #C5322D">le battant</div>
+            <div style="font-family:'Anton',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.18em;margin-top:6px;color:rgba(245,240,225,.65)">07 . 06 . 2026 · 09:42</div>
+          </div>
+        </div>
+
+        <div style="padding:30px 36px">
+
+          <!-- Section client -->
+          <div style="margin-bottom:24px">
+            <h2 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.02em;border-bottom:4px solid #C5322D;padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:5px 11px">01</span>Client</h2>
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <tr><td style="padding:4px 0;color:#888;width:35%">Société</td><td style="padding:4px 0"><strong>SARL Menuiserie Dupont</strong></td></tr>
+              <tr><td style="padding:4px 0;color:#888">Contact</td><td style="padding:4px 0">Pierre Dupont — Conducteur de travaux</td></tr>
+              <tr><td style="padding:4px 0;color:#888">Email</td><td style="padding:4px 0">p.dupont@menuiserie-dupont.fr</td></tr>
+              <tr><td style="padding:4px 0;color:#888">Téléphone</td><td style="padding:4px 0">06 12 34 56 78</td></tr>
+              <tr><td style="padding:4px 0;color:#888">SIRET</td><td style="padding:4px 0">812 345 678 00012</td></tr>
+            </table>
+          </div>
+
+          <!-- Section chantier -->
+          <div style="margin-bottom:24px">
+            <h2 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.02em;border-bottom:4px solid #C5322D;padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:5px 11px">02</span>Livraison</h2>
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <tr><td style="padding:4px 0;color:#888;width:35%">Prestation</td><td style="padding:4px 0"><strong>Fabrication sur-mesure</strong></td></tr>
+              <tr><td style="padding:4px 0;color:#888">Bâtiment</td><td style="padding:4px 0">Immeuble · Copropriété</td></tr>
+              <tr><td style="padding:4px 0;color:#888">Lieu</td><td style="padding:4px 0">06400 Cannes</td></tr>
+            </table>
+          </div>
+
+          <!-- Bloc volets -->
+          <div style="background:#14141A;color:#F5F0E1;padding:18px 22px">
+            <h2 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.02em;border-bottom:3px solid #C5322D;padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:#F5F0E1"><span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:5px 11px">03</span>Récap volets</h2>
+            <div style="font-family:'Archivo Black',sans-serif;font-size:24px;color:#8FAF89;letter-spacing:.05em">6 unités · 2 types</div>
+            <div style="font-size:11px;color:rgba(245,240,225,.5);margin-top:4px;font-family:'Archivo Black',sans-serif;letter-spacing:.2em;text-transform:uppercase">★ Détails techniques pages 2-3 ★</div>
+          </div>
+
+        </div>
+
+        <!-- Footer page 1 -->
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#14141A;color:#F5F0E1;padding:10px 20px;font-size:9px;letter-spacing:.2em;font-family:'Archivo Black',sans-serif;text-transform:uppercase;display:flex;justify-content:space-between;border-top:3px solid #C5322D">
+          <span>★ LE BATTANT</span>
+          <span>Devis #2026-047</span>
+          <span>1 / 3 ★</span>
+        </div>
+      </div>
+
+      <!-- Page 2 du PDF (résumé visuel) -->
+      <div style="max-width:560px;margin:0 auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);position:relative;min-height:740px;font-family:'Space Grotesk',sans-serif">
+        <div style="position:absolute;top:12px;right:14px;font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:rgba(20,20,26,.4);text-transform:uppercase">Page 2 / 3</div>
+        <div style="padding:36px 36px 24px">
+
+          <h2 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.02em;border-bottom:4px solid #C5322D;padding-bottom:6px;margin-bottom:18px;display:flex;align-items:center;gap:10px"><span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:5px 11px">04</span>Volet 1 / 2</h2>
+
+          <!-- Volet 1 -->
+          <div style="background:#F5F0E1;border-left:6px solid #4A6347;padding:18px 22px;margin-bottom:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div>
+                <span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:4px 10px">N° 04</span>
+                <span style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;margin-left:10px">Pliant suspendu</span>
+              </div>
+              <span style="background:rgba(74,99,71,.15);color:#4A6347;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:6px 12px;text-transform:uppercase">★ 4 unités ★</span>
+            </div>
+            <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px">
+              <tr><td style="padding:3px 0;color:#888;width:50%">Dimensions ouverture</td><td style="padding:3px 0"><strong>1200 × 2400 mm</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Nombre de panneaux</td><td style="padding:3px 0"><strong>4 panneaux</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Support haut</td><td style="padding:3px 0"><strong>Linteau béton</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Roulettes</td><td style="padding:3px 0"><strong>Silencieuses premium</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Finition</td><td style="padding:3px 0"><strong>Anodisation Bronze · Mat</strong></td></tr>
+            </table>
+          </div>
+
+          <!-- Volet 2 -->
+          <h2 style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.02em;border-bottom:4px solid #C5322D;padding-bottom:6px;margin:24px 0 18px;display:flex;align-items:center;gap:10px"><span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:5px 11px">04</span>Volet 2 / 2</h2>
+
+          <div style="background:#F5F0E1;border-left:6px solid #4A6347;padding:18px 22px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div>
+                <span style="background:#C5322D;color:#fff;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:4px 10px">N° 06</span>
+                <span style="font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;margin-left:10px">Brise-vue</span>
+              </div>
+              <span style="background:rgba(74,99,71,.15);color:#4A6347;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.2em;padding:6px 12px;text-transform:uppercase">★ 2 unités ★</span>
+            </div>
+            <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px">
+              <tr><td style="padding:3px 0;color:#888;width:50%">Dimensions panneau</td><td style="padding:3px 0"><strong>1500 × 1800 mm</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Inclinaison lamelles</td><td style="padding:3px 0"><strong>45°</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Cadre périphérique</td><td style="padding:3px 0"><strong>Avec cadre</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Fixation</td><td style="padding:3px 0"><strong>Poteaux fournis</strong></td></tr>
+              <tr><td style="padding:3px 0;color:#888">Finition</td><td style="padding:3px 0"><strong>Anodisation Bronze · Mat</strong></td></tr>
+            </table>
+          </div>
+
+          <!-- Message client -->
+          <div style="background:rgba(143,175,137,.1);border:2px dashed #4A6347;padding:14px 18px;margin-top:24px;font-size:12px;font-style:italic;color:rgba(20,20,26,.75)">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.25em;color:#C5322D;text-transform:uppercase;font-style:normal;margin-bottom:6px">★ Message du client ★</div>
+            "Volets sur-mesure pour les balcons d'une copro à Cannes. Besoin d'un devis ferme pour CR avant fin juin. Plans joints. Merci !"
+          </div>
+        </div>
+
+        <!-- Footer page 2 -->
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#14141A;color:#F5F0E1;padding:10px 20px;font-size:9px;letter-spacing:.2em;font-family:'Archivo Black',sans-serif;text-transform:uppercase;display:flex;justify-content:space-between;border-top:3px solid #C5322D">
+          <span>★ LE BATTANT</span>
+          <span>Devis #2026-047</span>
+          <span>2 / 3 ★</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background:var(--vert-deep);color:var(--creme);padding:14px 20px;margin-top:14px;font-size:13px;border-left:4px solid var(--vert-volet)">
+      <strong style="color:var(--vert-volet);font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase">★ Info ★</strong><br>
+      Le PDF complet fait 3 pages : récap client/chantier · détails techniques de chaque volet · message client + pièces jointes du client. Tu peux le transférer tel quel à ton commercial ou à un partenaire pour la pose.
+    </div>
+  </div>
+
+  <div class="comment">
+    <div class="lab">★ Commentaire sur le format de réception ★</div>
+    <textarea data-q="commentD" placeholder="Le format vous va ? Manque des infos ? Trop chargé ? Couleur du PDF ? Email lisible sur mobile ?"></textarea>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLEAU COMPARATIF -->
+<!-- ============================================================ -->
+<section style="margin-top:60px">
+  <h2 style="font-family:'Anton',sans-serif;font-size:32px;text-transform:uppercase;border-bottom:4px solid var(--rouge-sang);padding-bottom:10px;margin-bottom:24px;letter-spacing:.02em">★ Tableau comparatif</h2>
+
+  <div class="compare">
+    <table>
+      <thead>
+        <tr>
+          <th>Critère</th>
+          <th>Version A · Wizard</th>
+          <th>Version B · Page longue</th>
+          <th>Version C · Pliable</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tcrit">Clarté pour débutant</td>
+          <td><span class="vmark good">Excellent</span></td>
+          <td><span class="vmark bad">Faible</span></td>
+          <td><span class="vmark mid">Moyen</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">Vitesse pour pros</td>
+          <td><span class="vmark bad">Lente</span></td>
+          <td><span class="vmark good">Rapide</span></td>
+          <td><span class="vmark good">Rapide</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">Vue d'ensemble</td>
+          <td><span class="vmark bad">Non</span></td>
+          <td><span class="vmark good">Oui</span></td>
+          <td><span class="vmark good">Oui</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">UX mobile</td>
+          <td><span class="vmark good">Excellente</span></td>
+          <td><span class="vmark bad">Lourde</span></td>
+          <td><span class="vmark good">Très bonne</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">Risque oubli champ</td>
+          <td><span class="vmark good">Très faible</span></td>
+          <td><span class="vmark bad">Élevé</span></td>
+          <td><span class="vmark mid">Moyen</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">Complexité code</td>
+          <td><span class="vmark bad">Élevée</span></td>
+          <td><span class="vmark good">Faible</span></td>
+          <td><span class="vmark mid">Moyenne</span></td>
+        </tr>
+        <tr>
+          <td class="tcrit">Style « premium »</td>
+          <td><span class="vmark good">Oui (guidé)</span></td>
+          <td><span class="vmark mid">Standard</span></td>
+          <td><span class="vmark good">Oui (moderne)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- CHOIX FINAL -->
+<!-- ============================================================ -->
+<div class="final">
+  <h2>★ Votre choix final</h2>
+  <p>Après avoir testé les 3 versions, quelle est votre préférée ? On part dessus pour la prod.</p>
+
+  <div class="final-choice">
+    <div class="fc-opt" data-choice="A" onclick="setChoice('A')">
+      <div class="fc-name">Version A</div>
+      <div class="fc-sub">Wizard étape par étape</div>
+    </div>
+    <div class="fc-opt" data-choice="B" onclick="setChoice('B')">
+      <div class="fc-name">Version B</div>
+      <div class="fc-sub">Page longue</div>
+    </div>
+    <div class="fc-opt" data-choice="C" onclick="setChoice('C')">
+      <div class="fc-name">Version C</div>
+      <div class="fc-sub">Sections pliables</div>
+    </div>
+    <div class="fc-opt" data-choice="mix" onclick="setChoice('mix')">
+      <div class="fc-name">Mix</div>
+      <div class="fc-sub">À discuter (préciser ci-dessous)</div>
+    </div>
+  </div>
+
+  <textarea data-q="choixFinal" placeholder="Pourquoi ce choix ? Ce qu'il faut ajouter/modifier de la version retenue ? Idées pour le mix ?"></textarea>
+
+  <div style="margin-top:32px;text-align:center">
+    <button type="button" onclick="sendFeedback()" style="background:#C5322D;color:#F5F0E1;border:none;padding:24px 40px;font-family:'Archivo Black',sans-serif;font-size:18px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 0 #7A1F1B,0 12px 24px rgba(0,0,0,.3);transition:transform .1s,box-shadow .1s;width:100%;max-width:520px" onmousedown="this.style.transform='translateY(4px)';this.style.boxShadow='0 2px 0 #7A1F1B,0 6px 12px rgba(0,0,0,.3)'" onmouseup="this.style.transform='';this.style.boxShadow='0 6px 0 #7A1F1B,0 12px 24px rgba(0,0,0,.3)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 0 #7A1F1B,0 12px 24px rgba(0,0,0,.3)'">
+      📩 Envoyer mon retour à Herman
+    </button>
+    <p style="margin-top:14px;font-size:13px;color:rgba(245,240,225,.75);font-style:italic">Ça ouvre ton appli mail avec tes notes, commentaires et choix déjà pré-remplis.<br>Tu n'as plus qu'à appuyer sur Envoyer.</p>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="pacifico">le battant</div>
+  <div class="slogan">★ ET TOUT CE QUI SUIT ★</div>
+  <div style="margin-top:18px;font-size:11px;letter-spacing:.2em;color:rgba(245,240,225,.5);font-family:'Archivo Black',sans-serif">PROPOSITIONS FORMULAIRE DEVIS · ROUND TWO</div>
+</footer>
+
+<script>
+const STORAGE_KEY = 'lebattant_devis_versions_v1';
+
+// SAVE / LOAD
+function loadAll(){
+  try{
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    // Textareas
+    document.querySelectorAll('[data-q]').forEach(el=>{
+      if(data[el.dataset.q] !== undefined) el.value = data[el.dataset.q];
+    });
+    // Ratings
+    if(data.ratings){
+      Object.entries(data.ratings).forEach(([v,n])=>{
+        const stars = document.querySelector(`[data-rating="${v}"]`);
+        if(stars) updateStars(stars, n);
+      });
+    }
+    // Final choice
+    if(data.finalChoice){
+      const el = document.querySelector(`[data-choice="${data.finalChoice}"]`);
+      if(el) el.classList.add('sel');
+    }
+  }catch(e){console.warn(e);}
+}
+function saveAll(){
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+  document.querySelectorAll('[data-q]').forEach(el=>{
+    if(el.value) data[el.dataset.q] = el.value;
+  });
+  // Ratings
+  data.ratings = data.ratings || {};
+  document.querySelectorAll('[data-rating]').forEach(stars=>{
+    const v = stars.dataset.rating;
+    const onCount = stars.querySelectorAll('.star.on').length;
+    if(onCount) data.ratings[v] = onCount;
+  });
+  // Final choice
+  const sel = document.querySelector('.fc-opt.sel');
+  if(sel) data.finalChoice = sel.dataset.choice;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showSaved();
+}
+let savedTimer;
+function showSaved(){
+  const el = document.getElementById('saveInd');
+  el.classList.add('show');
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(()=>el.classList.remove('show'), 1200);
+}
+
+// TABS
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${t}"]`).classList.add('active');
+  document.getElementById('tab'+t).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// WIZARD navigation in demo
+const wizState = { A: 2 };
+function wizGoto(v, step){
+  if(step < 1 || step > 6) return;
+  wizState[v] = step;
+  document.querySelectorAll(`#tab${v} .wiz-step`).forEach(s=>s.classList.remove('active'));
+  document.querySelector(`#tab${v} .wiz-step[data-wzstep="${step}"]`).classList.add('active');
+  document.querySelectorAll(`#tab${v} .d-progress .s`).forEach((s,i)=>{
+    s.classList.remove('act','don');
+    if(i+1 < step) s.classList.add('don');
+    if(i+1 === step) s.classList.add('act');
+  });
+}
+function wizNext(v){ wizGoto(v, (wizState[v]||1)+1); }
+function wizPrev(v){ wizGoto(v, (wizState[v]||1)-1); }
+
+/* ===== Sélection dynamique des volets (A/B/C) — IMAGES réelles + le DÉTAIL ne montre QUE les volets sélectionnés ===== */
+const VOLET_TYPES = {
+  1:{n:'Battant à gond', img:'01-battant-gond', o:['2 vantaux','Jointives','Espacées']},
+  2:{n:'Battant à dormant', img:'02-battant-dormant', o:['2 vantaux','Jointives','Espacées']},
+  3:{n:'Pliant', img:'03-pliant', o:['3 pan.','4 pan.','6 pan.']},
+  4:{n:'Pliant suspendu', img:'04-pliant-suspendu', o:['3 pan.','4 pan.','6 pan.']},
+  5:{n:'Coulissant', img:'05-coulissant-suspendu', o:['1 rail','2 rails','3 rails']},
+  6:{n:'Brise-vue', img:'06-brise-vue', o:['30°','45°','60°']},
+  7:{n:'Brise-soleil', img:'07-brise-soleil', o:['Orientable','30°','45°']},
+  8:{n:'Séparatif', img:'08-separatif-balcon', o:['Plein','Ajouré']},
+};
+const IMG = num => `showroom-volets/${VOLET_TYPES[num].img}_A-showcase.png`;
+const sel = {A:{},B:{},C:{}}; window.sel = sel;
+function pad2(n){ return ('0'+n).slice(-2); }
+function renderGrid(v){
+  const grid=document.getElementById('voletGrid'+v); if(!grid) return;
+  grid.innerHTML = Object.keys(VOLET_TYPES).map(num=>{
+    const on = !!sel[v][num];
+    return `<div class="d-card${on?' sel':''}" style="cursor:pointer;overflow:hidden;padding:0" onclick="toggleVolet('${v}',${num})">
+      <img src="${IMG(num)}" alt="${VOLET_TYPES[num].n}" loading="lazy" style="width:100%;height:78px;object-fit:cover;display:block;border-bottom:2px solid var(--noir)">
+      <div style="padding:6px 8px"><div class="fa">N°${pad2(num)}</div><div class="nm" style="font-size:12px">${VOLET_TYPES[num].n}</div></div>
+    </div>`;
+  }).join('');
+}
+function toggleVolet(v,num){
+  if(sel[v][num]) delete sel[v][num]; else sel[v][num]={qty:1,w:'',h:'',opt:0};
+  renderGrid(v); renderDet(v); updateCount(v);
+}
+function changeQty(v,num,d){
+  if(!sel[v][num])return; sel[v][num].qty=Math.max(1,(sel[v][num].qty||1)+d);
+  const q=document.getElementById('qty-'+v+'-'+num); if(q)q.textContent=sel[v][num].qty;
+  updateCount(v);
+}
+function setOpt(v,num,i,row){
+  if(!sel[v][num])return; sel[v][num].opt=i;
+  [...row.children].forEach((c,j)=>c.classList.toggle('sel',j===i));
+}
+function renderDet(v){
+  const box=document.getElementById('det'+v), empty=document.getElementById('det'+v+'-empty'); if(!box)return;
+  const nums=Object.keys(sel[v]).map(Number).sort((a,b)=>a-b);
+  if(empty) empty.style.display = nums.length? 'none':'block';
+  box.innerHTML = nums.map(num=>{
+    const t=VOLET_TYPES[num], s=sel[v][num];
+    const opts=t.o.map((o,i)=>`<div class="d-card${i===s.opt?' sel':''}" style="padding:8px" onclick="event.stopPropagation();setOpt('${v}',${num},${i},this.parentNode)"><div class="nm" style="font-size:12px">${o}</div></div>`).join('');
+    return `<div style="background:#fff;border:2px solid var(--noir);border-left:6px solid var(--vert-deep);padding:14px 16px;margin:10px 0 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:2px solid var(--rouge-sang);padding-bottom:6px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><img src="${IMG(num)}" alt="" style="width:46px;height:46px;object-fit:cover;border:2px solid var(--noir);flex-shrink:0"><div><div class="fa" style="font-size:9px">N°${pad2(num)}</div><div style="font-family:'Anton',sans-serif;font-size:16px;text-transform:uppercase;line-height:1">${t.n}</div></div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button type="button" onclick="changeQty('${v}',${num},-1)" style="border:2px solid var(--noir);background:#fff;width:26px;height:26px;font-weight:bold;cursor:pointer">−</button>
+          <span id="qty-${v}-${num}" style="font-family:'Archivo Black',sans-serif;min-width:18px;text-align:center">${s.qty}</span>
+          <button type="button" onclick="changeQty('${v}',${num},1)" style="border:2px solid var(--noir);background:#fff;width:26px;height:26px;font-weight:bold;cursor:pointer">+</button>
+          <span style="font-size:9px;color:var(--vert-deep);font-family:'Archivo Black',sans-serif;letter-spacing:.15em;margin-left:2px">unités</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+        <input type="number" placeholder="Largeur mm" value="${s.w}" oninput="sel['${v}'][${num}].w=this.value" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px">
+        <input type="number" placeholder="Hauteur mm" value="${s.h}" oninput="sel['${v}'][${num}].h=this.value" style="padding:8px 10px;border:2px solid var(--noir);font-size:12px"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px">${opts}</div>
+    </div>`;
+  }).join('');
+}
+function updateCount(v){
+  const nums=Object.keys(sel[v]).map(Number);
+  const types=nums.length, units=nums.reduce((a,n)=>a+(sel[v][n].qty||1),0);
+  const c=document.getElementById('count'+v); if(c)c.textContent=`★ ${types} type${types>1?'s':''} sélectionné${types>1?'s':''} · ${units} unité${units>1?'s':''} au total ★`;
+  const r=document.getElementById('recapVolets'+v); if(r)r.textContent=`${types} type${types>1?'s':''} · ${units} unité${units>1?'s':''}`;
+}
+// Présélection par défaut {01,04,06} sur chaque version + premier rendu
+['A','B','C'].forEach(v=>{ [1,4,6].forEach(n=>{ sel[v][n]={qty:1,w:'',h:'',opt:0}; }); renderGrid(v); renderDet(v); updateCount(v); });
+// compat anciens appels inline éventuels
+function toggleVoletA(n){ toggleVolet('A',n); }
+function changeQtyA(n,d){ changeQty('A',n,d); }
+function setOptA(n,i,row){ setOpt('A',n,i,row); }
+
+/* ===== Échantillons de couleur (Gemini) — étape Finitions ===== */
+const COLORS = [
+  {f:'ral-7016', ral:'RAL 7016', nm:'Anthracite'},
+  {f:'ral-9005', ral:'RAL 9005', nm:'Noir'},
+  {f:'ral-9010', ral:'RAL 9010', nm:'Blanc'},
+  {f:'ral-7039', ral:'RAL 7039', nm:'Gris quartz'},
+  {f:'ral-6021', ral:'RAL 6021', nm:'Vert'},
+  {f:'ral-1015', ral:'RAL 1015', nm:'Ivoire'},
+  {f:'ral-3013', ral:'RAL 3013', nm:'Rouge'},
+  {f:'anodise-bronze', ral:'Anodisé', nm:'Bronze'},
+];
+let colorPick = 0;
+function renderSwatches(){
+  const html = COLORS.map((c,i)=>`<div onclick="pickColor(${i})" style="cursor:pointer;border:3px solid ${i===colorPick?'var(--rouge-sang)':'transparent'};border-radius:4px;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12)">
+    <img src="couleurs/${c.f}.png" alt="${c.ral} ${c.nm}" loading="lazy" style="width:100%;height:62px;object-fit:cover;display:block">
+    <div style="padding:4px 6px;font-family:'Archivo Black',sans-serif;font-size:8px;letter-spacing:.08em;text-transform:uppercase;line-height:1.3">${c.ral}<br><span style="color:var(--rouge-sang)">${c.nm}</span></div>
+  </div>`).join('');
+  document.querySelectorAll('.sw-color').forEach(b=>b.innerHTML=html);
+}
+function pickColor(i){ colorPick=i; renderSwatches(); updateRecapFinition(); }
+/* ===== Échantillons de TEXTURE / traitement (Gemini) ===== */
+const TRAITS=[{f:'trait-ral',nm:'RAL',fa:'213 teintes'},{f:'trait-anodise',nm:'Anodisé',fa:'Bronze/Champ.'},{f:'trait-brosse',nm:'Brossé',fa:'Métal direct'},{f:'trait-sable',nm:'Sablé',fa:'Mat granuleux'}];
+const TEXES=[{f:'tex-mat',nm:'Mat'},{f:'tex-satine',nm:'Satiné'},{f:'tex-grain',nm:'Grain'}];
+let traitPick=0, texPick=0;
+function finishCard(f,label,sub,active,onclick){
+  return `<div onclick="${onclick}" style="cursor:pointer;border:3px solid ${active?'var(--rouge-sang)':'transparent'};border-radius:4px;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12)">
+    <img src="couleurs/${f}.png" loading="lazy" style="width:100%;height:58px;object-fit:cover;display:block">
+    <div style="padding:4px 6px;font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.06em;text-transform:uppercase">${label}${sub?`<br><span style="color:var(--rouge-sang);font-size:8px">${sub}</span>`:''}</div>
+  </div>`;
+}
+function renderTrait(){const h=TRAITS.map((t,i)=>finishCard(t.f,t.nm,t.fa,i===traitPick,`pickTrait(${i})`)).join('');document.querySelectorAll('.sw-trait').forEach(b=>b.innerHTML=h);}
+function renderTex(){const h=TEXES.map((t,i)=>finishCard(t.f,t.nm,'',i===texPick,`pickTex(${i})`)).join('');document.querySelectorAll('.sw-tex').forEach(b=>b.innerHTML=h);}
+function pickTrait(i){traitPick=i;renderTrait();updateRecapFinition();}
+function pickTex(i){texPick=i;renderTex();updateRecapFinition();}
+function updateRecapFinition(){const c=COLORS[colorPick];const txt=`${c.ral} — ${c.nm} · ${TRAITS[traitPick].nm} · ${TEXES[texPick].nm}`;document.querySelectorAll('.recap-finition').forEach(r=>r.textContent=txt);}
+renderSwatches(); renderTrait(); renderTex(); updateRecapFinition();
+
+// Statut Pro / Particulier sur la version A
+function setStatutA(s){
+  document.querySelectorAll('[data-statA]').forEach(c=>c.classList.remove('sel'));
+  const sel = document.querySelector(`[data-statA="${s}"]`);
+  if(sel) sel.classList.add('sel');
+  const partForm = document.getElementById('partFormA');
+  if(s === 'part'){
+    partForm.style.display = 'block';
+  } else {
+    partForm.style.display = 'none';
+  }
+}
+
+// ACCORDION
+function toggleAcc(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+// SUB TABS (onglet D)
+function switchSub(s){
+  document.querySelectorAll('.d-subtab').forEach(x=>{
+    x.classList.remove('active');
+    x.style.background='var(--creme)';
+    x.style.color='var(--noir)';
+    x.style.border='2px solid var(--noir)';
+    x.style.padding='10px';
+  });
+  const active = document.querySelector(`.d-subtab[data-sub="${s}"]`);
+  active.classList.add('active');
+  active.style.background='var(--noir)';
+  active.style.color='var(--creme)';
+  active.style.border='none';
+  active.style.padding='12px';
+  document.querySelectorAll('.sub-pane').forEach(x=>x.style.display='none');
+  const subEl = document.getElementById('sub'+s.charAt(0).toUpperCase()+s.slice(1));
+  if(subEl) subEl.style.display='block';
+}
+
+// STARS
+function updateStars(stars, n){
+  stars.querySelectorAll('.star').forEach((s,i)=>{
+    s.classList.toggle('on', i < n);
+  });
+}
+
+// FINAL CHOICE
+function setChoice(v){
+  document.querySelectorAll('.fc-opt').forEach(x=>x.classList.remove('sel'));
+  document.querySelector(`[data-choice="${v}"]`).classList.add('sel');
+  saveAll();
+}
+
+// FEEDBACK — construit un mailto pré-rempli avec toutes les data du formulaire
+function sendFeedback(){
+  saveAll(); // Force sauvegarde avant collecte
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+  const ratings = data.ratings || {};
+  const labels = {A:'A · Wizard', B:'B · Page longue', C:'C · Sections pliables'};
+  const choiceLabels = {A:'A · Wizard', B:'B · Page longue', C:'C · Sections pliables', mix:'Mix (à discuter)'};
+  const starStr = n => n ? '★'.repeat(n) + '☆'.repeat(5-n) + ` (${n}/5)` : 'Pas noté';
+
+  const parts = [];
+  parts.push("Salut Herman,");
+  parts.push("");
+  parts.push("Voici mon retour sur les 3 versions du formulaire de devis Le battant.");
+  parts.push("");
+  parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  parts.push("MES NOTES PAR VERSION");
+  parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  parts.push("");
+
+  ['A','B','C'].forEach(v=>{
+    parts.push(`▸ VERSION ${labels[v]}`);
+    parts.push(`   Note : ${starStr(ratings[v])}`);
+    const comment = data['comment'+v] || '(pas de commentaire)';
+    parts.push(`   Commentaire : ${comment}`);
+    parts.push("");
+  });
+
+  if(data.commentD){
+    parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    parts.push("MON RETOUR SUR L'EMAIL + PDF (onglet 📨)");
+    parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    parts.push("");
+    parts.push(data.commentD);
+    parts.push("");
+  }
+
+  parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  parts.push("MON CHOIX FINAL");
+  parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  parts.push("");
+  parts.push(`▸ Version retenue : ${data.finalChoice ? choiceLabels[data.finalChoice] : '(pas encore choisi)'}`);
+  parts.push("");
+  parts.push("▸ Pourquoi ce choix / précisions :");
+  parts.push(data.choixFinal || '(pas de précision)');
+  parts.push("");
+  parts.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  parts.push("");
+  parts.push("À bientôt,");
+  parts.push("Simon");
+
+  const body = parts.join('\n');
+  const subject = "Retour Simon — Formulaire devis Le battant";
+  const mailto = `mailto:herman.vanel@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // Avertir si rien rempli
+  const hasAnyRating = ['A','B','C'].some(v=>ratings[v]);
+  const hasAnyComment = ['commentA','commentB','commentC','choixFinal'].some(k=>data[k]);
+  if(!hasAnyRating && !hasAnyComment && !data.finalChoice){
+    if(!confirm("Tu n'as encore rien rempli (notes, commentaires, choix final). Envoyer quand même un mail vide ?")) return;
+  }
+
+  window.location.href = mailto;
+}
+
+// DELEGATION GLOBALE — tout est cliquable (sans bloquer textareas/inputs)
+document.addEventListener('click', e=>{
+  // Si on clique sur un input/textarea, on laisse le navigateur faire son boulot
+  if(e.target.matches('textarea, input, select, button, a')) return;
+  // Stars
+  const star = e.target.closest('[data-rating] .star');
+  if(star){
+    const stars = star.closest('[data-rating]');
+    const n = parseInt(star.dataset.v);
+    updateStars(stars, n);
+    saveAll();
+    return;
+  }
+  // Demo cards (radio/multi selon nombre de siblings)
+  const dcard = e.target.closest('.d-card');
+  if(dcard){
+    const grid = dcard.parentElement;
+    const siblings = grid.querySelectorAll(':scope > .d-card');
+    if(siblings.length <= 4){
+      if(dcard.classList.contains('sel')){ dcard.classList.remove('sel'); }
+      else { siblings.forEach(s=>s.classList.remove('sel')); dcard.classList.add('sel'); }
+    } else {
+      dcard.classList.toggle('sel');
+    }
+    return;
+  }
+});
+
+// Force focus + saisie pour TOUS les champs, statiques ET dynamiques (délégation en capture).
+// Couvre input/textarea/select de tout type (texte, email, tel, number, date…), y compris ceux rendus en JS.
+['pointerdown','mousedown','touchstart'].forEach(evt=>{
+  document.addEventListener(evt, e=>{
+    const f = e.target.closest('input, textarea, select');
+    if(f){ e.stopPropagation(); }
+  }, true);
+});
+document.addEventListener('click', e=>{
+  const f = e.target.closest('input, textarea, select');
+  if(f){ e.stopPropagation(); f.removeAttribute('readonly'); if(document.activeElement!==f){ try{ f.focus(); }catch(_){} } }
+}, true);
+
+// RESET
+function resetAll(){
+  if(!confirm('Effacer toutes vos réponses ?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('[data-q]').forEach(el=>el.value='');
+  document.querySelectorAll('.star.on').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.fc-opt.sel').forEach(x=>x.classList.remove('sel'));
+}
+
+// PDF EXPORT
+function exportPDF(){
+  if(typeof window.jspdf === 'undefined'){ alert('jsPDF non chargé.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const PW = 210, M = 18;
+  let y = M;
+
+  // Header
+  doc.setFillColor(20,20,26);
+  doc.rect(0,0,PW,32,'F');
+  doc.setTextColor(143,175,137);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('LE BATTANT', M, 14);
+  doc.setTextColor(197,50,45);
+  doc.setFontSize(9);
+  doc.text('★ ROUND TWO ★', M, 21);
+  doc.setTextColor(245,240,225);
+  doc.setFontSize(13);
+  doc.text('Choix du formulaire de devis — 3 versions', M, 27);
+  y = 42;
+
+  // Notes et commentaires
+  const versions = [
+    { id:'A', name:'Version A — Wizard étape par étape', com:'commentA' },
+    { id:'B', name:'Version B — Page longue', com:'commentB' },
+    { id:'C', name:'Version C — Sections pliables', com:'commentC' },
+    { id:'D', name:'Format de réception — Email + PDF', com:'commentD' }
+  ];
+
+  versions.forEach(v=>{
+    if(y > 250){ doc.addPage(); y = M; }
+    doc.setFillColor(197,50,45);
+    doc.rect(M, y, PW-M*2, 9, 'F');
+    doc.setTextColor(245,240,225);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text(v.name.toUpperCase(), M+3, y+6.5);
+    y += 14;
+
+    const ratingStars = document.querySelector(`[data-rating="${v.id}"]`);
+    const rating = ratingStars ? ratingStars.querySelectorAll('.star.on').length : 0;
+    doc.setTextColor(74,99,71);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.text(`Note : ${rating > 0 ? '★'.repeat(rating) + '☆'.repeat(5-rating) + ` (${rating}/5)` : '(non noté)'}`, M, y);
+    y += 8;
+
+    const commentEl = document.querySelector(`[data-q="${v.com}"]`);
+    const comment = commentEl?.value.trim() || '(pas de commentaire)';
+    doc.setTextColor(20,20,26);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize('Commentaire : ' + comment, PW-M*2);
+    lines.forEach(line=>{
+      if(y > 280){ doc.addPage(); y = M; }
+      doc.text(line, M, y);
+      y += 5.5;
+    });
+    y += 8;
+  });
+
+  // Choix final
+  if(y > 240){ doc.addPage(); y = M; }
+  doc.setFillColor(20,20,26);
+  doc.rect(M, y, PW-M*2, 9, 'F');
+  doc.setTextColor(143,175,137);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.text('★ CHOIX FINAL ★', M+3, y+6.5);
+  y += 14;
+  const choice = document.querySelector('.fc-opt.sel');
+  const choiceLbl = choice ? choice.querySelector('.fc-name').textContent + ' — ' + choice.querySelector('.fc-sub').textContent : '(aucun choix)';
+  doc.setTextColor(197,50,45);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.text(choiceLbl, M, y);
+  y += 10;
+  const finalCom = document.querySelector('[data-q="choixFinal"]')?.value.trim() || '(pas de précisions)';
+  doc.setTextColor(20,20,26);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.splitTextToSize(finalCom, PW-M*2).forEach(line=>{
+    if(y > 285){ doc.addPage(); y = M; }
+    doc.text(line, M, y);
+    y += 5.5;
+  });
+
+  doc.save('le-battant-choix-devis.pdf');
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadAll();
+  document.querySelectorAll('[data-q]').forEach(el=>{
+    el.addEventListener('input', saveAll);
+  });
+});
+</script>
+
+</body>
+</html>
